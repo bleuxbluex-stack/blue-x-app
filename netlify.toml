@@ -1,0 +1,7 @@
+# Netlify Configuration for BlueX Mobile App & Supabase Proxy
+
+[[redirects]]
+  from = "/supabase-proxy/*"
+  to = "https://thldfqdcesaajigjgquv.supabase.co/:splat"
+  status = 200
+  force = true

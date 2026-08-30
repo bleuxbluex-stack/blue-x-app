@@ -1,0 +1,9 @@
+# Netlify Reverse Proxy for Supabase
+# Bypasses ISP domain blocks (e.g., Jio/Airtel in India blocking *.supabase.co)
+
+[[redirects]]
+  from = "/*"
+  to = "https://thldfqdcesaajigjgquv.supabase.co/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify-Supabase-Proxy"}
