@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "blue-x-supabase-proxy",
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "https://thldfqdcesaajigjgquv.supabase.co/:path*"
+    }
+  ]
+}
