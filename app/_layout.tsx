@@ -10,37 +10,17 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } f
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { LanguageProvider } from '@/context/LanguageContext';
 
-try {
-  SplashScreen.preventAutoHideAsync();
-} catch (e) {
-  // Ignore splash screen errors on native APK startup
-}
-
 function RootNavigator() {
   const { session, loading } = useAuth();
-  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
-    }, 1000);
-
-    if (!loading) {
-      setAuthChecked(true);
-    }
-
-    return () => clearTimeout(timer);
-  }, [loading]);
-
-  useEffect(() => {
-    if (!authChecked) return;
-
+    if (loading) return;
     if (!session) {
       router.replace('/(auth)/welcome');
     } else {
       router.replace('/(tabs)');
     }
-  }, [session, authChecked]);
+  }, [session, loading]);
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F7F9FC' } }}>
@@ -57,9 +37,8 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useFrameworkReady();
-  const [isAppReady, setIsAppReady] = useState(false);
 
-  const [fontsLoaded, fontError] = useFonts({
+  const [fontsLoaded] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-Medium': Inter_500Medium,
     'Inter-SemiBold': Inter_600SemiBold,
@@ -67,23 +46,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      setIsAppReady(true);
-      SplashScreen.hideAsync().catch(() => {});
-    }, 800);
-
-    if (fontsLoaded || fontError) {
-      setIsAppReady(true);
-      SplashScreen.hideAsync().catch(() => {});
-      clearTimeout(safetyTimer);
-    }
-
-    return () => clearTimeout(safetyTimer);
-  }, [fontsLoaded, fontError]);
-
-  if (!isAppReady) {
-    return null;
-  }
+    SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
 
   return (
     <GestureHandlerRootView style={styles.root}>
