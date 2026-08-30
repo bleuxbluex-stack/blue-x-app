@@ -1,9 +1,5 @@
-# Netlify Reverse Proxy for Supabase
-# Bypasses ISP domain blocks (e.g., Jio/Airtel in India blocking *.supabase.co)
+# Netlify Configuration for BlueX Mobile App & Supabase Proxy
 
-[[redirects]]
-  from = "/*"
-  to = "https://thldfqdcesaajigjgquv.supabase.co/:splat"
-  status = 200
-  force = true
-  headers = {X-From = "Netlify-Supabase-Proxy"}
+[[edge_functions]]
+  path = "/*"
+  function = "proxy"
