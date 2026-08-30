@@ -10,22 +10,26 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } f
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { LanguageProvider } from '@/context/LanguageContext';
 
-SplashScreen.preventAutoHideAsync();
+try {
+  SplashScreen.preventAutoHideAsync();
+} catch (e) {
+  // Ignore splash screen errors on native APK startup
+}
 
 function RootNavigator() {
   const { session, loading } = useAuth();
-  const [initialNavDone, setInitialNavDone] = useState(false);
 
   useEffect(() => {
     if (loading) return;
-    if (!session) {
-      router.replace('/(auth)/welcome');
-      setInitialNavDone(true);
-    } else if (!initialNavDone) {
-      router.replace('/(tabs)');
-      setInitialNavDone(true);
-    }
-  }, [session, loading, initialNavDone]);
+    const timeout = setTimeout(() => {
+      if (!session) {
+        router.replace('/(auth)/welcome');
+      } else {
+        router.replace('/(tabs)');
+      }
+    }, 50);
+    return () => clearTimeout(timeout);
+  }, [session, loading]);
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F7F9FC' } }}>
@@ -52,7 +56,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError]);
 
