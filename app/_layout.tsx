@@ -18,18 +18,29 @@ try {
 
 function RootNavigator() {
   const { session, loading } = useAuth();
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
-    const timeout = setTimeout(() => {
-      if (!session) {
-        router.replace('/(auth)/welcome');
-      } else {
-        router.replace('/(tabs)');
-      }
-    }, 50);
-    return () => clearTimeout(timeout);
-  }, [session, loading]);
+    const timer = setTimeout(() => {
+      setAuthChecked(true);
+    }, 1000);
+
+    if (!loading) {
+      setAuthChecked(true);
+    }
+
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!authChecked) return;
+
+    if (!session) {
+      router.replace('/(auth)/welcome');
+    } else {
+      router.replace('/(tabs)');
+    }
+  }, [session, authChecked]);
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F7F9FC' } }}>
@@ -46,6 +57,7 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useFrameworkReady();
+  const [isAppReady, setIsAppReady] = useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': Inter_400Regular,
@@ -55,12 +67,21 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    const safetyTimer = setTimeout(() => {
+      setIsAppReady(true);
       SplashScreen.hideAsync().catch(() => {});
+    }, 800);
+
+    if (fontsLoaded || fontError) {
+      setIsAppReady(true);
+      SplashScreen.hideAsync().catch(() => {});
+      clearTimeout(safetyTimer);
     }
+
+    return () => clearTimeout(safetyTimer);
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!isAppReady) {
     return null;
   }
 
