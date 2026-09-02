@@ -1,14 +1,16 @@
 import 'react-native-url-polyfill/auto';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Stack, router, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { LanguageProvider } from '@/context/LanguageContext';
+
+// Keep splash screen visible while fonts & auth state are initializing
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
   const { session, loading } = useAuth();
@@ -21,6 +23,14 @@ function RootNavigator() {
       router.replace('/(tabs)');
     }
   }, [session, loading]);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#14B8A6" />
+      </View>
+    );
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F7F9FC' } }}>
@@ -36,9 +46,7 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  useFrameworkReady();
-
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-Medium': Inter_500Medium,
     'Inter-SemiBold': Inter_600SemiBold,
@@ -46,8 +54,14 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    SplashScreen.hideAsync().catch(() => {});
-  }, [fontsLoaded]);
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={styles.root}>
@@ -63,4 +77,6 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F7F9FC' },
+  loadingContainer: { flex: 1, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center' },
 });
+

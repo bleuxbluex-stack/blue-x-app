@@ -23,17 +23,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRole(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
+    let mounted = true;
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!mounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchRole(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('[Auth] getSession failed:', err);
+        if (mounted) setLoading(false);
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -44,21 +53,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Fallback timer to prevent APK from getting stuck on splash screen in case of network stalls
+    const fallbackTimer = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 2500);
+
+    return () => {
+      mounted = false;
+      clearTimeout(fallbackTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (error) {
-      console.warn('Could not fetch user role:', error.message);
+      if (error) {
+        console.warn('Could not fetch user role:', error.message);
+      }
+      setRole(data?.role ?? 'client');
+    } catch (err) {
+      console.warn('fetchRole error:', err);
+      setRole('client');
+    } finally {
+      setLoading(false);
     }
-    setRole(data?.role ?? 'client');
-    setLoading(false);
   };
 
   const signIn = async (email: string, password: string) => {
