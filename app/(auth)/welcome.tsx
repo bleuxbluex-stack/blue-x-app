@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ImageBackground, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowRight, CheckCircle2, Star, Zap } from 'lucide-react-native';
@@ -29,17 +29,13 @@ export default function WelcomeScreen() {
           <View style={styles.ambientGlowBottom} pointerEvents="none" />
 
           <View style={styles.container}>
-            {/* Top Brand Header (No logo icon) */}
+            {/* Top Brand Header with Official Logo */}
             <View style={styles.brandHeader}>
-              <View style={styles.swissBadge}>
-                <View style={styles.badgeDot} />
-                <Text style={styles.swissBadgeText}>SWISS QUALITY ASSURED</Text>
-              </View>
-              
-              <Text style={styles.brandTitleText}>
-                Blue<Text style={styles.brandTitleAccent}>X</Text>
-              </Text>
-              <Text style={styles.brandTagline}>SWISS SERVICE NETWORK</Text>
+              <Image 
+                source={require('../../assets/images/logo.png')} 
+                style={styles.brandLogoImage} 
+                resizeMode="contain" 
+              />
             </View>
 
             {/* Feature Highlights Section */}
@@ -145,8 +141,15 @@ const styles = StyleSheet.create({
     opacity: 0.1,
   },
 
-  // Top Brand Section (No logo icon)
-  brandHeader: { alignItems: 'center', marginTop: 12 },
+  // Top Brand Section
+  brandHeader: { alignItems: 'center', marginTop: 12, marginBottom: 8 },
+  brandLogoImage: {
+    width: 240,
+    height: 120,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 8,
+  },
   swissBadge: {
     flexDirection: 'row',
     alignItems: 'center',
