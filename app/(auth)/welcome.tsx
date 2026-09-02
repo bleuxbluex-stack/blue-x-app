@@ -29,10 +29,10 @@ export default function WelcomeScreen() {
           <View style={styles.ambientGlowBottom} pointerEvents="none" />
 
           <View style={styles.container}>
-            {/* Top Brand Header with Official Logo */}
+            {/* Top Brand Header with Official Transparent Logo */}
             <View style={styles.brandHeader}>
               <Image 
-                source={require('../../assets/images/logo.png')} 
+                source={require('../../assets/images/logo_dark_theme.png')} 
                 style={styles.brandLogoImage} 
                 resizeMode="contain" 
               />
@@ -144,11 +144,8 @@ const styles = StyleSheet.create({
   // Top Brand Section
   brandHeader: { alignItems: 'center', marginTop: 12, marginBottom: 8 },
   brandLogoImage: {
-    width: 240,
-    height: 120,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 8,
+    width: 220,
+    height: 110,
   },
   swissBadge: {
     flexDirection: 'row',
