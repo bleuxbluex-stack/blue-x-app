@@ -29,6 +29,10 @@ export default function BookingDetailScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (id === 'new') {
+      router.replace('/booking/new');
+      return;
+    }
     if (!user) return;
     (async () => {
       try {

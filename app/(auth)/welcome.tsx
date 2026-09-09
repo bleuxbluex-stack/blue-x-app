@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable, ImageBackground, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowRight, CheckCircle2, Star, Zap } from 'lucide-react-native';
+import { ArrowRight, CheckCircle2, Star, Zap, ShieldCheck } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
@@ -17,8 +17,8 @@ export default function WelcomeScreen() {
         resizeMode="cover"
       >
         <LinearGradient
-          colors={['rgba(15, 23, 42, 0.45)', 'rgba(15, 23, 42, 0.82)', '#0F172A']}
-          locations={[0, 0.42, 0.95]}
+          colors={['rgba(15, 23, 42, 0.50)', 'rgba(15, 23, 42, 0.85)', '#0F172A']}
+          locations={[0, 0.40, 0.95]}
           style={[
             styles.overlay,
             { paddingTop: Math.max(insets.top + 20, 48), paddingBottom: Math.max(insets.bottom + 16, 28) }
@@ -29,8 +29,12 @@ export default function WelcomeScreen() {
           <View style={styles.ambientGlowBottom} pointerEvents="none" />
 
           <View style={styles.container}>
-            {/* Top Brand Header with Official Transparent Logo */}
+            {/* Top Brand Header with Official Transparent Dark Theme Logo */}
             <View style={styles.brandHeader}>
+              <View style={styles.swissBadge}>
+                <ShieldCheck size={14} color="#38BDF8" strokeWidth={2.2} />
+                <Text style={styles.swissBadgeText}>VERIFIED SERVICE NETWORK</Text>
+              </View>
               <Image 
                 source={require('../../assets/images/logo_dark_theme.png')} 
                 style={styles.brandLogoImage} 
@@ -65,7 +69,7 @@ export default function WelcomeScreen() {
                   <Star size={18} color="#FBBF24" strokeWidth={2.4} />
                 </View>
                 <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>4.9/5 Swiss Standard</Text>
+                  <Text style={styles.featureTitle}>4.9/5 Quality Standard</Text>
                   <Text style={styles.featureDesc}>Trusted across Zürich, Geneva & Bern</Text>
                 </View>
               </View>
@@ -74,7 +78,7 @@ export default function WelcomeScreen() {
             {/* Bottom Content & Action Deck */}
             <View style={styles.bottomSection}>
               <View style={styles.headlineWrap}>
-                <Text style={styles.headline}>Swiss Quality Home & Repair Services.</Text>
+                <Text style={styles.headline}>Premium Home & Repair Services.</Text>
                 <Text style={styles.subline}>
                   Book top plumbers, electricians, cleaners & handymen with transparent pricing and guaranteed satisfaction.
                 </Text>
@@ -86,7 +90,7 @@ export default function WelcomeScreen() {
                   onPress={() => router.push('/(auth)/register')}
                 >
                   <LinearGradient
-                    colors={['#14B8A6', '#0F3A40']}
+                    colors={['#2563EB', '#1E40AF']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.gradientBtn}
@@ -119,16 +123,15 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, position: 'relative' },
   container: { flex: 1, paddingHorizontal: 24, justifyContent: 'space-between' },
 
-  // Ambient Glows
   ambientGlowTop: {
     position: 'absolute',
-    top: -60,
-    alignSelf: 'center',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: '#14B8A6',
-    opacity: 0.15,
+    top: -50,
+    left: -40,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: '#2563EB',
+    opacity: 0.18,
   },
   ambientGlowBottom: {
     position: 'absolute',
@@ -138,14 +141,14 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 100,
     backgroundColor: '#38BDF8',
-    opacity: 0.1,
+    opacity: 0.12,
   },
 
   // Top Brand Section
-  brandHeader: { alignItems: 'center', marginTop: 12, marginBottom: 8 },
+  brandHeader: { alignItems: 'center', marginTop: 8 },
   brandLogoImage: {
-    width: 220,
-    height: 110,
+    width: 300,
+    height: 160,
   },
   swissBadge: {
     flexDirection: 'row',
@@ -154,36 +157,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(37, 99, 235, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    marginBottom: 12,
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+    marginBottom: 4,
   },
-  badgeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#34D399' },
   swissBadgeText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 10,
-    color: '#94A3B8',
+    color: '#38BDF8',
     letterSpacing: 1.2,
-  },
-  brandTitleText: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 42,
-    color: '#FFFFFF',
-    letterSpacing: -1.2,
-    lineHeight: 46,
-  },
-  brandTitleAccent: { color: '#14B8A6' },
-  brandTagline: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.6)',
-    letterSpacing: 2.2,
-    marginTop: 4,
   },
 
   // Feature Highlights
-  featuresSection: { gap: 10, marginVertical: 16 },
+  featuresSection: { gap: 10, marginVertical: 12 },
   featureCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -191,15 +178,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 16,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   featureIconWrap: {
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: 'rgba(20, 184, 166, 0.12)',
+    backgroundColor: 'rgba(37, 99, 235, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -239,7 +226,7 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#14B8A6',
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -270,5 +257,5 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.16)',
   },
   signInText: { fontFamily: 'Inter-Medium', fontSize: 14, color: '#94A3B8' },
-  signInBold: { fontFamily: 'Inter-Bold', color: '#14B8A6' },
+  signInBold: { fontFamily: 'Inter-Bold', color: '#38BDF8' },
 });
