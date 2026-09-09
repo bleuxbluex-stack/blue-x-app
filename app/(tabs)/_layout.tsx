@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
-import { Home, Calendar, MessageSquare, User, CalendarDays } from 'lucide-react-native';
+import { Home, Calendar, MessageSquare, User } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '@/constants/theme';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
 
   return (
     <Tabs
@@ -18,7 +19,7 @@ export default function TabLayout() {
           paddingBottom: 8 + insets.bottom,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: '#14B8A6',
+        tabBarActiveTintColor: '#38BDF8',
         tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.55)',
         tabBarLabelStyle: { fontFamily: 'Inter-SemiBold', fontSize: 11, fontWeight: '600' },
       }}
@@ -26,21 +27,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('home'),
           tabBarIcon: ({ size, color }) => <Home size={size} color={color} strokeWidth={2.2} />,
         }}
       />
       <Tabs.Screen
         name="bookings"
         options={{
-          title: 'Bookings',
+          title: t('bookings'),
           tabBarIcon: ({ size, color }) => <Calendar size={size} color={color} strokeWidth={2.2} />,
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
-          title: 'Messages',
+          title: t('messages'),
           tabBarIcon: ({ size, color }) => <MessageSquare size={size} color={color} strokeWidth={2.2} />,
         }}
       />
@@ -48,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('profile'),
           tabBarIcon: ({ size, color }) => <User size={size} color={color} strokeWidth={2.2} />,
         }}
       />

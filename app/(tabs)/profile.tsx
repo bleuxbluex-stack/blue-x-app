@@ -58,6 +58,13 @@ export default function ProfileScreen() {
     LANGUAGES.find(l => l.code === language) || { name: 'English', code: 'EN' }
   );
 
+  useEffect(() => {
+    const matched = LANGUAGES.find(l => l.code === language);
+    if (matched) {
+      setSelectedLanguage(matched);
+    }
+  }, [language]);
+
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [providerProfile, setProviderProfile] = useState<ProviderProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -305,44 +312,44 @@ export default function ProfileScreen() {
       <View style={styles.body}>
         {/* Stats */}
         <View style={[styles.statsRow, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
-          <View style={styles.statItem}><Text style={[styles.statNum, { color: activeTheme.colors.textPrimary }]}>12</Text><Text style={[styles.statLabel, { color: activeTheme.colors.textSecondary }]}>Bookings</Text></View>
+          <View style={styles.statItem}><Text style={[styles.statNum, { color: activeTheme.colors.textPrimary }]}>12</Text><Text style={[styles.statLabel, { color: activeTheme.colors.textSecondary }]}>{t('bookings')}</Text></View>
           <View style={[styles.statDivider, { backgroundColor: activeTheme.colors.border }]} />
-          <View style={styles.statItem}><Text style={[styles.statNum, { color: activeTheme.colors.textPrimary }]}>8</Text><Text style={[styles.statLabel, { color: activeTheme.colors.textSecondary }]}>Reviews</Text></View>
+          <View style={styles.statItem}><Text style={[styles.statNum, { color: activeTheme.colors.textPrimary }]}>8</Text><Text style={[styles.statLabel, { color: activeTheme.colors.textSecondary }]}>{t('reviews')}</Text></View>
           <View style={[styles.statDivider, { backgroundColor: activeTheme.colors.border }]} />
-          <View style={styles.statItem}><Text style={[styles.statNum, { color: activeTheme.colors.textPrimary }]}>{savedProviders.length}</Text><Text style={[styles.statLabel, { color: activeTheme.colors.textSecondary }]}>Saved</Text></View>
+          <View style={styles.statItem}><Text style={[styles.statNum, { color: activeTheme.colors.textPrimary }]}>{savedProviders.length}</Text><Text style={[styles.statLabel, { color: activeTheme.colors.textSecondary }]}>{t('saved')}</Text></View>
         </View>
 
         {/* Personal info */}
         <View style={styles.sectionHeaderRow}>
-          <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>Personal Information</Text>
+          <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>{t('personal_info')}</Text>
           <Pressable style={[styles.editDetailsBtn, { backgroundColor: activeTheme.colors.accentLight, borderColor: activeTheme.colors.border }]} onPress={openEditModal}>
             <Pencil size={13} color={activeTheme.colors.accent} strokeWidth={2.2} />
-            <Text style={[styles.editDetailsBtnText, { color: activeTheme.colors.accent }]}>Edit Details</Text>
+            <Text style={[styles.editDetailsBtnText, { color: activeTheme.colors.accent }]}>{t('edit_details')}</Text>
           </Pressable>
         </View>
 
         <View style={[styles.infoCard, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
           <View style={styles.infoRow}>
             <View style={[styles.infoIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Mail size={16} color={activeTheme.colors.accent} strokeWidth={2.2} /></View>
-            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>Email</Text>
+            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>{t('email')}</Text>
             <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]} numberOfLines={1}>{email}</Text>
           </View>
           <View style={[styles.infoDivider, { backgroundColor: activeTheme.colors.border }]} />
           <View style={styles.infoRow}>
             <View style={[styles.infoIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Phone size={16} color={activeTheme.colors.accent} strokeWidth={2.2} /></View>
-            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>Phone</Text>
+            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>{t('phone')}</Text>
             <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]}>{phone}</Text>
           </View>
           <View style={[styles.infoDivider, { backgroundColor: activeTheme.colors.border }]} />
           <View style={styles.infoRow}>
             <View style={[styles.infoIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Calendar size={16} color={activeTheme.colors.accent} strokeWidth={2.2} /></View>
-            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>Birthday</Text>
+            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>{t('birthday')}</Text>
             <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]}>{dob}</Text>
           </View>
           <View style={[styles.infoDivider, { backgroundColor: activeTheme.colors.border }]} />
           <View style={styles.infoRow}>
             <View style={[styles.infoIcon, { backgroundColor: activeTheme.colors.accentLight }]}><MapPin size={16} color={activeTheme.colors.accent} strokeWidth={2.2} /></View>
-            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>City</Text>
+            <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>{t('city')}</Text>
             <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]}>{city}</Text>
           </View>
 
@@ -351,48 +358,48 @@ export default function ProfileScreen() {
               <View style={[styles.infoDivider, { backgroundColor: activeTheme.colors.border }]} />
               <View style={styles.infoRow}>
                 <View style={[styles.infoIcon, { backgroundColor: activeTheme.colors.accentLight }]}><DollarSign size={16} color={activeTheme.colors.accent} strokeWidth={2.2} /></View>
-                <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>Hourly Rate</Text>
+                <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>{t('hourly_rate')}</Text>
                 <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]}>CHF {providerProfile.hourly_rate || 90}/hr</Text>
               </View>
               <View style={[styles.infoDivider, { backgroundColor: activeTheme.colors.border }]} />
               <View style={styles.infoRow}>
                 <View style={[styles.infoIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Award size={16} color={activeTheme.colors.accent} strokeWidth={2.2} /></View>
-                <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>Experience</Text>
-                <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]}>{providerProfile.experience_years || 1}+ Years</Text>
+                <Text style={[styles.infoLabel, { color: activeTheme.colors.textSecondary }]}>{t('experience')}</Text>
+                <Text style={[styles.infoValue, { color: activeTheme.colors.textPrimary }]}>{providerProfile.experience_years || 1}+ {t('years')}</Text>
               </View>
             </>
           )}
         </View>
 
         {/* Account */}
-        <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>Account</Text>
+        <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>{t('account')}</Text>
         <View style={[styles.menuCard, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
           <Pressable style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><CreditCard size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Payment Methods</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('payment_methods')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
 
           <Pressable onPress={() => setSavedModalVisible(true)} style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Star size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Saved Providers</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('saved_providers')}</Text>
             <Text style={[styles.menuValue, { color: activeTheme.colors.textSecondary }]}>{savedProviders.length}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
 
           <Pressable style={({ pressed }) => [styles.menuItem, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Shield size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Security</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('security')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
         </View>
 
         {/* Preferences */}
-        <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>Preferences</Text>
+        <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>{t('preferences')}</Text>
         <View style={[styles.menuCard, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
           <View style={[styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Moon size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Dark Mode</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('dark_mode')}</Text>
             <Switch
               value={darkMode}
               onValueChange={(val) => {
@@ -405,42 +412,42 @@ export default function ProfileScreen() {
 
           <View style={[styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Bell size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Notifications</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('notifications')}</Text>
             <Switch value={notifications} onValueChange={setNotifications} trackColor={{ false: '#E2E8F0', true: activeTheme.colors.mint }} />
           </View>
 
           <Pressable onPress={() => setLanguageModalVisible(true)} style={({ pressed }) => [styles.menuItem, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Globe size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Language</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('language')}</Text>
             <Text style={[styles.menuValue, { color: activeTheme.colors.textSecondary }]}>{selectedLanguage.name}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
         </View>
 
         {/* Support */}
-        <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>Support</Text>
+        <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>{t('support')}</Text>
         <View style={[styles.menuCard, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
           <Pressable style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><HelpCircle size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Help Center</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('help_center')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
 
           <Pressable style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Lock size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>Privacy Policy</Text>
+            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('privacy_policy')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
 
           <Pressable onPress={signOut} style={({ pressed }) => [styles.menuItem, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}><LogOut size={18} color="#EF4444" strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: '#EF4444' }]}>Log Out</Text>
+            <Text style={[styles.menuLabel, { color: '#EF4444' }]}>{t('log_out')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
         </View>
       </View>
 
-      {/* 1. Language Selection Modal (Exact match to screenshot) */}
+      {/* 1. Language Selection Modal */}
       <Modal
         visible={languageModalVisible}
         animationType="fade"
@@ -450,7 +457,7 @@ export default function ProfileScreen() {
         <View style={styles.langModalOverlay}>
           <View style={styles.langModalCard}>
             <View style={styles.langModalHeader}>
-              <Text style={styles.langModalTitle}>Select Language</Text>
+              <Text style={styles.langModalTitle}>{t('select_language')}</Text>
               <Pressable onPress={() => setLanguageModalVisible(false)} style={styles.langCloseBtn}>
                 <X size={18} color="#64748B" strokeWidth={2} />
               </Pressable>
@@ -463,11 +470,10 @@ export default function ProfileScreen() {
                   <Pressable
                     key={lang.code}
                     style={[styles.langItem, isSelected && styles.langItemSelected]}
-                    onPress={() => {
-                      setLanguage(lang.code as LanguageCode);
+                    onPress={async () => {
+                      await setLanguage(lang.code as LanguageCode);
                       setSelectedLanguage(lang);
                       setLanguageModalVisible(false);
-                      Alert.alert('Language Updated', `App language set to ${lang.name} (${lang.code})`);
                     }}
                   >
                     <Text style={[styles.langName, isSelected && styles.langNameSelected]}>{lang.name}</Text>
