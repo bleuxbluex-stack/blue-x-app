@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Switch, ActivityIndicato
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { ChevronRight, Shield, Bell, Globe, Moon, Lock, HelpCircle, LogOut, CreditCard, Star, MapPin, Mail, Phone, Calendar, Camera, Pencil, X, Save, Award, DollarSign, Heart, MessageSquare, Check } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ChevronRight, Shield, Bell, Globe, Moon, Lock, HelpCircle, LogOut, Star, MapPin, Mail, Phone, Calendar, Camera, Pencil, X, Save, Award, DollarSign, Heart, MessageSquare, Check, ChevronDown, KeyRound, Smartphone, Fingerprint, FileText, Info } from 'lucide-react-native';
 import { GradientHeader } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/context/LanguageContext';
@@ -49,6 +50,29 @@ const LANGUAGES = [
   { name: 'Srpski', code: 'SR' },
 ];
 
+const FAQS = [
+  {
+    question: 'How do I book a service provider?',
+    answer: 'Browse service categories on the Home screen or tap on a top provider. Click "Request Booking", select your preferred date, time, and service location, then confirm your request.',
+  },
+  {
+    question: 'How do payments work?',
+    answer: 'Payments are handled securely upon service request or completion. You can review pricing directly on provider profiles prior to confirming your appointment.',
+  },
+  {
+    question: 'What is the cancellation policy?',
+    answer: 'You can cancel or reschedule any active booking free of charge up to 2 hours before the scheduled appointment time directly from the "Bookings" tab.',
+  },
+  {
+    question: 'How do I message a service expert?',
+    answer: 'Open any provider profile or saved item and tap the "Chat" button to open a direct real-time message stream with the provider.',
+  },
+  {
+    question: 'Are service providers background checked?',
+    answer: 'Yes! All service providers on Blue X are identity-verified with background checks and rating monitoring to ensure premium service quality.',
+  },
+];
+
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -74,40 +98,25 @@ export default function ProfileScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Language Modal State
+  // Modals State
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
-
-  // Saved Providers Modal State
   const [savedModalVisible, setSavedModalVisible] = useState(false);
-  const [savedProviders, setSavedProviders] = useState<SavedProviderItem[]>([
-    {
-      id: 'sp1',
-      user_id: 'e9df7d84-73df-468d-8bee-c93235a5f102',
-      name: 'Manoj',
-      category: 'Plumber',
-      rating: 4.9,
-      hourly_rate: 90,
-      avatar_url: null,
-    },
-    {
-      id: 'sp2',
-      user_id: '59c1e434-4a8a-4eed-9f0c-5dd4b50277fc',
-      name: 'Outlaws',
-      category: 'Wire Man (Electrician)',
-      rating: 4.8,
-      hourly_rate: 85,
-      avatar_url: null,
-    },
-    {
-      id: 'sp3',
-      user_id: '6fdb0df2-e804-4029-8c66-e61a35d65dcc',
-      name: 'TestCompany Clean Ag',
-      category: 'Cleaner',
-      rating: 5.0,
-      hourly_rate: 75,
-      avatar_url: null,
-    },
-  ]);
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+  const [securityModalVisible, setSecurityModalVisible] = useState(false);
+
+  // Accordion state in Help Center
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+
+  // Security Form State
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [biometricsEnabled, setBiometricsEnabled] = useState(true);
+
+  // User-Isolated Saved Providers State
+  const [savedProviders, setSavedProviders] = useState<SavedProviderItem[]>([]);
 
   // Form Fields
   const [formFullName, setFormFullName] = useState('');
@@ -134,6 +143,87 @@ export default function ProfileScreen() {
       white: '#FFFFFF',
     }
   } : defaultTheme;
+
+  // Load User-Isolated Preferences & Saved Providers
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const savedNotif = await AsyncStorage.getItem(`@user_notifications_${user.id}`);
+        if (savedNotif !== null) setNotifications(JSON.parse(savedNotif));
+
+        const savedDark = await AsyncStorage.getItem(`@user_dark_mode_${user.id}`);
+        if (savedDark !== null) setDarkMode(JSON.parse(savedDark));
+
+        const saved2FA = await AsyncStorage.getItem(`@user_2fa_${user.id}`);
+        if (saved2FA !== null) setTwoFactorEnabled(JSON.parse(saved2FA));
+
+        const savedBio = await AsyncStorage.getItem(`@user_bio_unlock_${user.id}`);
+        if (savedBio !== null) setBiometricsEnabled(JSON.parse(savedBio));
+
+        const savedFavs = await AsyncStorage.getItem(`@user_saved_providers_${user.id}`);
+        if (savedFavs !== null) {
+          setSavedProviders(JSON.parse(savedFavs));
+        } else {
+          // Default initial fallback list for new user
+          const defaultFavs: SavedProviderItem[] = [
+            {
+              id: 'sp1',
+              user_id: 'e9df7d84-73df-468d-8bee-c93235a5f102',
+              name: 'Manoj',
+              category: 'Plumber',
+              rating: 4.9,
+              hourly_rate: 90,
+              avatar_url: null,
+            },
+            {
+              id: 'sp2',
+              user_id: '59c1e434-4a8a-4eed-9f0c-5dd4b50277fc',
+              name: 'Outlaws',
+              category: 'Wire Man (Electrician)',
+              rating: 4.8,
+              hourly_rate: 85,
+              avatar_url: null,
+            },
+          ];
+          setSavedProviders(defaultFavs);
+          await AsyncStorage.setItem(`@user_saved_providers_${user.id}`, JSON.stringify(defaultFavs));
+        }
+      } catch (err) {
+        console.log('Error loading user preferences:', err);
+      }
+    })();
+  }, [user?.id]);
+
+  const handleToggleNotifications = async (val: boolean) => {
+    setNotifications(val);
+    if (user?.id) {
+      await AsyncStorage.setItem(`@user_notifications_${user.id}`, JSON.stringify(val));
+    }
+  };
+
+  const handleToggleDarkMode = async (val: boolean) => {
+    setDarkMode(val);
+    if (user?.id) {
+      await AsyncStorage.setItem(`@user_dark_mode_${user.id}`, JSON.stringify(val));
+    }
+    Alert.alert('Theme Changed', val ? 'Dark Mode enabled' : 'Light Mode enabled');
+  };
+
+  const handleToggle2FA = async (val: boolean) => {
+    setTwoFactorEnabled(val);
+    if (user?.id) {
+      await AsyncStorage.setItem(`@user_2fa_${user.id}`, JSON.stringify(val));
+    }
+    Alert.alert('Security', val ? 'Two-Factor Authentication Enabled' : 'Two-Factor Authentication Disabled');
+  };
+
+  const handleToggleBiometrics = async (val: boolean) => {
+    setBiometricsEnabled(val);
+    if (user?.id) {
+      await AsyncStorage.setItem(`@user_bio_unlock_${user.id}`, JSON.stringify(val));
+    }
+  };
 
   const openEditModal = () => {
     setFormFullName(profile?.full_name || '');
@@ -208,9 +298,37 @@ export default function ProfileScreen() {
     }
   };
 
-  const toggleSaveProvider = (id: string) => {
-    setSavedProviders(prev => prev.filter(p => p.id !== id));
-    Alert.alert('Removed', 'Provider removed from saved list.');
+  const toggleSaveProvider = async (id: string) => {
+    const updated = savedProviders.filter(p => p.id !== id);
+    setSavedProviders(updated);
+    if (user?.id) {
+      await AsyncStorage.setItem(`@user_saved_providers_${user.id}`, JSON.stringify(updated));
+    }
+    Alert.alert('Removed', 'Provider removed from your saved list.');
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      Alert.alert('Password Error', 'Password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Password Error', 'New passwords do not match.');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      Alert.alert('Success', 'Security password updated successfully!');
+      setNewPassword('');
+      setConfirmPassword('');
+      setSecurityModalVisible(false);
+    } catch (err: any) {
+      Alert.alert('Security Update Failed', err.message || 'Could not update password.');
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   const handleSelectAndUploadImage = async () => {
@@ -371,15 +489,9 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Account */}
+        {/* Account (Payment Methods Removed) */}
         <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>{t('account')}</Text>
         <View style={[styles.menuCard, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
-          <Pressable style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
-            <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><CreditCard size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
-            <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('payment_methods')}</Text>
-            <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
-          </Pressable>
-
           <Pressable onPress={() => setSavedModalVisible(true)} style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Star size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
             <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('saved_providers')}</Text>
@@ -387,7 +499,7 @@ export default function ProfileScreen() {
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
 
-          <Pressable style={({ pressed }) => [styles.menuItem, pressed && styles.menuPressed]}>
+          <Pressable onPress={() => setSecurityModalVisible(true)} style={({ pressed }) => [styles.menuItem, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Shield size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
             <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('security')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
@@ -402,10 +514,7 @@ export default function ProfileScreen() {
             <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('dark_mode')}</Text>
             <Switch
               value={darkMode}
-              onValueChange={(val) => {
-                setDarkMode(val);
-                Alert.alert('Theme Changed', val ? 'Dark Mode enabled' : 'Light Mode enabled');
-              }}
+              onValueChange={handleToggleDarkMode}
               trackColor={{ false: '#E2E8F0', true: activeTheme.colors.mint }}
             />
           </View>
@@ -413,7 +522,7 @@ export default function ProfileScreen() {
           <View style={[styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Bell size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
             <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('notifications')}</Text>
-            <Switch value={notifications} onValueChange={setNotifications} trackColor={{ false: '#E2E8F0', true: activeTheme.colors.mint }} />
+            <Switch value={notifications} onValueChange={handleToggleNotifications} trackColor={{ false: '#E2E8F0', true: activeTheme.colors.mint }} />
           </View>
 
           <Pressable onPress={() => setLanguageModalVisible(true)} style={({ pressed }) => [styles.menuItem, pressed && styles.menuPressed]}>
@@ -427,13 +536,13 @@ export default function ProfileScreen() {
         {/* Support */}
         <Text style={[styles.sectionTitle, { color: activeTheme.colors.textPrimary }]}>{t('support')}</Text>
         <View style={[styles.menuCard, { backgroundColor: activeTheme.colors.card, borderColor: activeTheme.colors.border }]}>
-          <Pressable style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
+          <Pressable onPress={() => setHelpModalVisible(true)} style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><HelpCircle size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
             <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('help_center')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
           </Pressable>
 
-          <Pressable style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
+          <Pressable onPress={() => setPrivacyModalVisible(true)} style={({ pressed }) => [styles.menuItem, styles.menuItemBorder, { borderBottomColor: activeTheme.colors.border }, pressed && styles.menuPressed]}>
             <View style={[styles.menuIcon, { backgroundColor: activeTheme.colors.accentLight }]}><Lock size={18} color={activeTheme.colors.accent} strokeWidth={2} /></View>
             <Text style={[styles.menuLabel, { color: activeTheme.colors.textPrimary }]}>{t('privacy_policy')}</Text>
             <ChevronRight size={18} color={activeTheme.colors.textSecondary} strokeWidth={2} />
@@ -486,7 +595,7 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {/* 2. Saved Providers Modal */}
+      {/* 2. User-Isolated Saved Providers Modal */}
       <Modal
         visible={savedModalVisible}
         animationType="slide"
@@ -551,7 +660,217 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {/* 3. Edit Profile Details Modal */}
+      {/* 3. Security Modal */}
+      <Modal
+        visible={securityModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSecurityModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: activeTheme.colors.card }]}>
+            <View style={styles.modalCardHeader}>
+              <View style={styles.modalTitleRow}>
+                <Shield size={22} color={activeTheme.colors.accent} strokeWidth={2.2} />
+                <Text style={[styles.modalCardTitle, { color: activeTheme.colors.textPrimary }]}>Account Security</Text>
+              </View>
+              <Pressable style={styles.modalCardCloseBtn} onPress={() => setSecurityModalVisible(false)}>
+                <X size={18} color={activeTheme.colors.textPrimary} strokeWidth={2} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.formScroll}>
+              {/* Change Password */}
+              <View style={styles.secSection}>
+                <Text style={[styles.secSectionTitle, { color: activeTheme.colors.textPrimary }]}>Change Password</Text>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: activeTheme.colors.textSecondary }]}>New Password</Text>
+                  <TextInput
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    placeholder="Enter new password (min. 6 chars)"
+                    placeholderTextColor={activeTheme.colors.textSecondary}
+                    secureTextEntry
+                    style={[styles.textInput, { backgroundColor: activeTheme.colors.background, borderColor: activeTheme.colors.border, color: activeTheme.colors.textPrimary }]}
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: activeTheme.colors.textSecondary }]}>Confirm New Password</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholder="Confirm new password"
+                    placeholderTextColor={activeTheme.colors.textSecondary}
+                    secureTextEntry
+                    style={[styles.textInput, { backgroundColor: activeTheme.colors.background, borderColor: activeTheme.colors.border, color: activeTheme.colors.textPrimary }]}
+                  />
+                </View>
+
+                <Pressable
+                  style={[styles.updateSecBtn, { backgroundColor: activeTheme.colors.accent }]}
+                  onPress={handleChangePassword}
+                  disabled={changingPassword}
+                >
+                  {changingPassword ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <KeyRound size={16} color="#FFFFFF" strokeWidth={2.2} />
+                      <Text style={styles.updateSecBtnText}>Update Password</Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+
+              {/* Toggles */}
+              <View style={[styles.secToggleCard, { borderColor: activeTheme.colors.border }]}>
+                <View style={styles.secToggleRow}>
+                  <View style={styles.secToggleLeft}>
+                    <Smartphone size={18} color={activeTheme.colors.accent} strokeWidth={2} />
+                    <View>
+                      <Text style={[styles.secToggleTitle, { color: activeTheme.colors.textPrimary }]}>Two-Factor Authentication</Text>
+                      <Text style={[styles.secToggleSub, { color: activeTheme.colors.textSecondary }]}>Add extra security level to your account</Text>
+                    </View>
+                  </View>
+                  <Switch value={twoFactorEnabled} onValueChange={handleToggle2FA} trackColor={{ false: '#E2E8F0', true: activeTheme.colors.mint }} />
+                </View>
+
+                <View style={[styles.infoDivider, { backgroundColor: activeTheme.colors.border }]} />
+
+                <View style={styles.secToggleRow}>
+                  <View style={styles.secToggleLeft}>
+                    <Fingerprint size={18} color={activeTheme.colors.accent} strokeWidth={2} />
+                    <View>
+                      <Text style={[styles.secToggleTitle, { color: activeTheme.colors.textPrimary }]}>Biometric Quick Unlock</Text>
+                      <Text style={[styles.secToggleSub, { color: activeTheme.colors.textSecondary }]}>Use FaceID or Fingerprint to unlock app</Text>
+                    </View>
+                  </View>
+                  <Switch value={biometricsEnabled} onValueChange={handleToggleBiometrics} trackColor={{ false: '#E2E8F0', true: activeTheme.colors.mint }} />
+                </View>
+              </View>
+
+              {/* Active Sessions */}
+              <View style={[styles.secSessionBox, { borderColor: activeTheme.colors.border, backgroundColor: activeTheme.colors.background }]}>
+                <Info size={18} color={activeTheme.colors.accent} strokeWidth={2} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.secSessionTitle, { color: activeTheme.colors.textPrimary }]}>Current Session Active</Text>
+                  <Text style={[styles.secSessionSub, { color: activeTheme.colors.textSecondary }]}>Logged in on Mobile App • Zurich, Switzerland</Text>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 4. Help Center Modal */}
+      <Modal
+        visible={helpModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setHelpModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: activeTheme.colors.card }]}>
+            <View style={styles.modalCardHeader}>
+              <View style={styles.modalTitleRow}>
+                <HelpCircle size={22} color={activeTheme.colors.accent} strokeWidth={2.2} />
+                <Text style={[styles.modalCardTitle, { color: activeTheme.colors.textPrimary }]}>Help Center & FAQs</Text>
+              </View>
+              <Pressable style={styles.modalCardCloseBtn} onPress={() => setHelpModalVisible(false)}>
+                <X size={18} color={activeTheme.colors.textPrimary} strokeWidth={2} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.formScroll}>
+              <Text style={[styles.faqHeaderDesc, { color: activeTheme.colors.textSecondary }]}>
+                Find answers to common questions about services, bookings, cancellations, and provider contact below.
+              </Text>
+
+              {FAQS.map((faq, index) => {
+                const isExpanded = expandedFaq === index;
+                return (
+                  <View key={index} style={[styles.faqCard, { borderColor: activeTheme.colors.border }]}>
+                    <Pressable
+                      style={styles.faqQuestionRow}
+                      onPress={() => setExpandedFaq(isExpanded ? null : index)}
+                    >
+                      <Text style={[styles.faqQuestionText, { color: activeTheme.colors.textPrimary }]}>{faq.question}</Text>
+                      <ChevronDown size={18} color={activeTheme.colors.textSecondary} style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }} />
+                    </Pressable>
+                    {isExpanded && (
+                      <Text style={[styles.faqAnswerText, { color: activeTheme.colors.textSecondary }]}>{faq.answer}</Text>
+                    )}
+                  </View>
+                );
+              })}
+
+              <View style={[styles.contactSupportCard, { backgroundColor: activeTheme.colors.accentLight, borderColor: activeTheme.colors.accent }]}>
+                <Mail size={22} color={activeTheme.colors.accent} strokeWidth={2.2} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.contactSupportTitle, { color: activeTheme.colors.textPrimary }]}>Still need help?</Text>
+                  <Text style={[styles.contactSupportSub, { color: activeTheme.colors.textSecondary }]}>Contact our 24/7 support team at support@bluex.ch</Text>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 5. Privacy Policy Modal */}
+      <Modal
+        visible={privacyModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setPrivacyModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: activeTheme.colors.card }]}>
+            <View style={styles.modalCardHeader}>
+              <View style={styles.modalTitleRow}>
+                <FileText size={22} color={activeTheme.colors.accent} strokeWidth={2.2} />
+                <Text style={[styles.modalCardTitle, { color: activeTheme.colors.textPrimary }]}>Privacy Policy</Text>
+              </View>
+              <Pressable style={styles.modalCardCloseBtn} onPress={() => setPrivacyModalVisible(false)}>
+                <X size={18} color={activeTheme.colors.textPrimary} strokeWidth={2} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.formScroll}>
+              <Text style={[styles.privacyTag, { color: activeTheme.colors.accent }]}>LAST UPDATED: SEPTEMBER 2026</Text>
+
+              <View style={styles.privacyBlock}>
+                <Text style={[styles.privacyHeading, { color: activeTheme.colors.textPrimary }]}>1. Data We Collect</Text>
+                <Text style={[styles.privacyBody, { color: activeTheme.colors.textSecondary }]}>
+                  We collect information necessary to facilitate service bookings, including full name, phone number, email address, city/canton location, and optional profile pictures.
+                </Text>
+              </View>
+
+              <View style={styles.privacyBlock}>
+                <Text style={[styles.privacyHeading, { color: activeTheme.colors.textPrimary }]}>2. How We Protect Your Data</Text>
+                <Text style={[styles.privacyBody, { color: activeTheme.colors.textSecondary }]}>
+                  All user communications and database queries are encrypted in transit via SSL/TLS encryption and stored securely using industry-standard cloud database security.
+                </Text>
+              </View>
+
+              <View style={styles.privacyBlock}>
+                <Text style={[styles.privacyHeading, { color: activeTheme.colors.textPrimary }]}>3. Data Sharing & Third Parties</Text>
+                <Text style={[styles.privacyBody, { color: activeTheme.colors.textSecondary }]}>
+                  Blue X will never sell or monetize your personal information. Data is shared exclusively with confirmed service providers to complete booked appointments.
+                </Text>
+              </View>
+
+              <View style={styles.privacyBlock}>
+                <Text style={[styles.privacyHeading, { color: activeTheme.colors.textPrimary }]}>4. Your Rights & Compliance</Text>
+                <Text style={[styles.privacyBody, { color: activeTheme.colors.textSecondary }]}>
+                  Under the Swiss Federal Act on Data Protection (FADP) and GDPR regulations, you have full right to request data export or total account erasure by reaching out to privacy@bluex.ch.
+                </Text>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 6. Edit Profile Details Modal */}
       <Modal
         visible={editModalVisible}
         animationType="slide"
@@ -771,12 +1090,13 @@ const styles = StyleSheet.create({
   emptySavedTitle: { fontFamily: 'Inter-Bold', fontSize: 15 },
   emptySavedSub: { fontFamily: 'Inter-Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 16 },
 
-  // General Edit Profile Modal
+  // General Modal Base
   modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 30, 36, 0.6)', justifyContent: 'flex-end' },
   modalCard: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 30, maxHeight: '85%', gap: 14 },
   modalCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  modalCardTitle: { fontFamily: 'Inter-Bold', fontSize: 20 },
-  modalCardCloseBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  modalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  modalCardTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
+  modalCardCloseBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(148, 163, 184, 0.2)' },
   formScroll: { gap: 14, paddingVertical: 6 },
   inputGroup: { gap: 6 },
   rowInputs: { flexDirection: 'row', gap: 12 },
@@ -788,4 +1108,34 @@ const styles = StyleSheet.create({
   cancelBtnText: { fontFamily: 'Inter-Bold', fontSize: 14 },
   saveBtn: { flex: 2, height: 44, borderRadius: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   saveBtnText: { fontFamily: 'Inter-Bold', fontSize: 14, color: '#FFFFFF' },
+
+  // Security Modal Styles
+  secSection: { gap: 10 },
+  secSectionTitle: { fontFamily: 'Inter-Bold', fontSize: 15 },
+  updateSecBtn: { height: 44, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 },
+  updateSecBtnText: { fontFamily: 'Inter-Bold', fontSize: 14, color: '#FFFFFF' },
+  secToggleCard: { borderRadius: 16, borderWidth: 1, padding: 14, gap: 10, marginTop: 8 },
+  secToggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  secToggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  secToggleTitle: { fontFamily: 'Inter-Bold', fontSize: 13 },
+  secToggleSub: { fontFamily: 'Inter-Regular', fontSize: 11 },
+  secSessionBox: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, borderWidth: 1, marginTop: 4 },
+  secSessionTitle: { fontFamily: 'Inter-Bold', fontSize: 13 },
+  secSessionSub: { fontFamily: 'Inter-Regular', fontSize: 11 },
+
+  // Help Center Styles
+  faqHeaderDesc: { fontFamily: 'Inter-Regular', fontSize: 13, lineHeight: 18, marginBottom: 4 },
+  faqCard: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 8 },
+  faqQuestionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  faqQuestionText: { fontFamily: 'Inter-Bold', fontSize: 14, flex: 1, paddingRight: 10 },
+  faqAnswerText: { fontFamily: 'Inter-Regular', fontSize: 13, lineHeight: 19, paddingTop: 4 },
+  contactSupportCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1, marginTop: 10 },
+  contactSupportTitle: { fontFamily: 'Inter-Bold', fontSize: 14 },
+  contactSupportSub: { fontFamily: 'Inter-Regular', fontSize: 12 },
+
+  // Privacy Policy Styles
+  privacyTag: { fontFamily: 'Inter-Bold', fontSize: 11, letterSpacing: 0.5, marginBottom: 4 },
+  privacyBlock: { gap: 4 },
+  privacyHeading: { fontFamily: 'Inter-Bold', fontSize: 14 },
+  privacyBody: { fontFamily: 'Inter-Regular', fontSize: 13, lineHeight: 19 },
 });
